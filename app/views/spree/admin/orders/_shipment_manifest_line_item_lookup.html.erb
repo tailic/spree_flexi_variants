@@ -1,0 +1,4 @@
+<%
+   adhoc_value_ids = item.variant.product.ad_hoc_option_types.map{|t| t.ad_hoc_option_values.map &:id}.flatten
+   adhoc_customization_types = item.variant.product.product_customization_types
+   line_item = order.find_line_item_by_variant(item.variant, adhoc_value_ids, adhoc_customization_types) %>

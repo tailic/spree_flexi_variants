@@ -36,8 +36,8 @@ module Spree
     def find_line_item_by_variant(variant, ad_hoc_option_value_ids = [], product_customizations = [])
       line_items.detect do |li|
         li.variant_id == variant.id &&
-          matching_configurations(li.ad_hoc_option_values,ad_hoc_option_value_ids) &&
-          matching_customizations(li.product_customizations,product_customizations)
+          matching_configurations(li.ad_hoc_option_values, ad_hoc_option_value_ids) &&
+          matching_customizations(li.product_customizations, product_customizations)
       end
     end
 
@@ -64,14 +64,14 @@ module Spree
       Set.new pairs
     end
 
-    def matching_configurations(existing_povs,new_povs)
+    def matching_configurations(existing_povs, new_povs)
       # if there aren't any povs, there's a 'match'
       return true if existing_povs.empty? && new_povs.empty?
 
       existing_povs.map(&:id).sort == new_povs.map(&:to_i).sort
     end
 
-    def matching_customizations(existing_customizations,new_customizations)
+    def matching_customizations(existing_customizations, new_customizations)
 
       # if there aren't any customizations, there's a 'match'
       return true if existing_customizations.empty? && new_customizations.empty?
