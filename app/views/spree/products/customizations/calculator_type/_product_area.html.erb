@@ -10,17 +10,15 @@
 
   <%= content_for :head do %>
     <%= javascript_tag do %>
-
       function product_area_keyup() { 
         var tf = $(this);
 
         delay(function(){
-
           // update the hidden price field for this file input
           $(tf).parent().parent().find(".customization_price").val(calculate_product_area_price(tf));
           updatePrice();
         }, 1000 ); // delay
-      }); // keyup
+      }; // keyup
 
       $(document).on('keyup', '#<%= width_dom_id %>', product_area_keyup);
       $(document).on('keyup', '#<%= height_dom_id %>', product_area_keyup);

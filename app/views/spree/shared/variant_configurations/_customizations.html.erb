@@ -2,10 +2,10 @@
 
 <% if product.product_customization_types %>
 
-  <div id="product-customizations">
+  <div id="product-customizations" class="col-sm-12">
 
     <%# for finding optional partials %>
-    <% lookup=ActionView::LookupContext.new(ActionController::Base.view_paths, {:formats => [:html]}) %>
+    <% lookup = ActionView::LookupContext.new(ActionController::Base.view_paths, {:formats => [:html]}) %>
 
     <%# for finding optional partials %>
     <% product.product_customization_types.each do |product_customization_type| %>

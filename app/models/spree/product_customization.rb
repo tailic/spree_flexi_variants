@@ -7,7 +7,7 @@ module Spree
     # TODO: Jeff, add 'required'
 
     # price might depend on something contained in the variant (like product property value)a
-    def price(variant=nil)
+    def price(variant = nil)
       amount = product_customization_type.calculator.compute(self, variant)
     end
 
