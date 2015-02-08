@@ -1,0 +1,50 @@
+---
+de:
+  spree:
+    required: "Erforderlich?"
+    price_modifier: "Preis-Anpassung"
+    price_modifier_type: "What price modifier strategy does this option type use?"
+    add_option_values: "Optionswert hinzufügen"
+    edit_option_values: "Optionswert bearbeiten"
+    notice_messages:
+      option_value_removed: "Optionswert entfernt"
+      product_customization_type_removed: "Individualisierungs-Typ entfernt"
+      ad_hoc_variant_exclusion_removed: "Exclusion Removed"
+    ad_hoc_variant_exclusion: 'Ad Hoc Variant Exclusion'
+    ad_hoc_variant_exclusions: 'Ad Hoc Variant Exclusions'
+    ad_hoc_variant_exclusions_unavailable: "You only need to configure exclusions when you have more than one ad hoc option type"
+    product_customization_types: 'Individualisierungs-Typen'
+    product_customization_type: 'Individualisierungs-Typ'
+    customizable_product_options: 'Individualisierbare Optionen'
+    new_product_customization_type: 'Neuer Individualisierungs-Typ'
+    new_customizable_product_option: 'Neue Individualisierungs-Option'
+    new_ad_hoc_variant_exclusion: 'New Exclusion'
+    add_product_customization_type: 'Individualisierungs-Typ hinzufügen'
+    add_product_customization_types: 'Individualisierungs-Typen hinzufügen'
+    add_customizable_product_option: 'Individualisierungs-Option hinzufügen'
+    editing_product_customization_type: 'Individualisierungs-Typ bearbeiten'
+    form_label: 'HTML Form Label'
+    data_type: 'Data Type (for input validation)'
+    default_value: 'Default Value'
+    ad_hoc_option_types: 'Ad Hoc Option Types'
+    ad_hoc_option_type: 'Ad Hoc Option Type'
+    partial: 'Optionally override the default partial'
+    price_per_letter: 'Price Per Letter'
+    min_length: 'Min. Length'
+    multiplier: 'Multiplier'
+    max_length: 'Max. Length'
+    max_width: 'Max. Width'
+    min_height: 'Min. Height'
+    max_height: 'Max. Height'
+    min_width: 'Min. Width'
+    min_area: 'Min. Area'
+    min_amount: 'Min. Amount'
+    max_amount: 'Max. Amount'
+    min_pricing_area: 'Min. Area to Price (possbily has smaller area, but will be priced as if this area)'
+    not_all_combinations_available: '*Note that not all option combinations are available'
+    select_variant_options: 'Optionen'
+    customizations: 'Individualisierungen'
+    customize: 'Individualisieren'
+    reset: 'Reset'
+    position_within_product: 'Display order relative to other Ad Hoc Options (low numbers are displayed first)'
+    selected_by_default: 'Standard-Auswahl?'

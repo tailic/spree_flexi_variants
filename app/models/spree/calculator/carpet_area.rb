@@ -1,25 +1,20 @@
 module Spree
-  class Calculator::ProductArea < Calculator
-    preference :multiplier, :decimal
+  class Calculator::CarpetArea < Calculator
+    preference :min_width,            :integer, :default => 1
+    preference :max_width,            :integer, :default => 5
 
-    preference :min_pricing_area, :integer  # the minimum size we'll use for pricing (we might sell you a 4x4, but we'll charge u for a 10x10
+    preference :min_height,           :integer, :default => 1
+    preference :max_height,           :integer, :default => 14
 
-    preference :min_width, :integer, :default => 0
-    preference :max_width, :integer, :default => 100
+    preference :widths,  :string,  default: '4,5'
+    preference :min_pricing_area, :integer, default: 1
 
-    preference :min_height, :integer, :default => 0
-    preference :max_height, :integer, :default => 100
-
-    #attr_accessible :preferred_multiplier, :preferred_min_pricing_area, :preferred_min_width, :preferred_max_width,:preferred_min_height, :preferred_max_height
-
-    # preference :min_area, :integer  # the minimum sized frame we'll sell
-
-    # these can be reflected in the custom partials?
-    #  preference :measurement_units, :string, :default => 'inches'
-    #  preference :granularity, :string, :default => 'eighths'
+    GLATTSCHNITT = :glattschnitt
+    RAUMMASS = :raummass
+    TYPES = [:glattschnitt, :raummass]
 
     def self.description
-      "Product Area Calculator"
+      'Carpet Area Calculator (Based on Price Type)'
     end
 
     def self.register
@@ -28,44 +23,73 @@ module Spree
     end
 
     def create_options
-      # This calculator knows that it needs two CustomizableOptions, width & height
       [
-       CustomizableProductOption.create(:name=>"width", :presentation=>"Width"),
-       CustomizableProductOption.create(:name=>"height", :presentation=>"Height")
+       CustomizableProductOption.create(:name=>'Width', :presentation=>'Width'),
+       CustomizableProductOption.create(:name=>'Height', :presentation=>'Height'),
+       CustomizableProductOption.create(:name=>'Type', :presentation=>'Type')
       ]
     end
 
     # as object we always get line items, as calculable we have Coupon, ShippingMethod
-    def compute(product_customization, variant=nil)
-      return 0 unless valid_configuration? product_customization
+    def compute(product_customization, variant = nil)
+      unless valid_configuration? product_customization
+        set_option(product_customization, 'Width', 0)
+        set_option(product_customization, 'Height', 0)
+        set_option(product_customization, 'Type', 'Leider gab es einen Fehler bei der Eingabe. Bitte wenden Sie sich an unseren Kundenservice.')
+        return 0
+      end
 
-      width,height = get_option(product_customization, "width"), get_option(product_customization, "height")
+      width  = get_option(product_customization, 'Width').value.gsub(',', '.').to_d
+      height = get_option(product_customization, 'Height').value.gsub(',', '.').to_d
+      type   = get_option(product_customization, 'Type').value.to_sym
+      type   = TYPES.include?(type) ? type : TYPES.first
 
-      # here's the custom logic for this calculator:  min total width + height = 20.
-      [(width.value.to_f * height.value.to_f), (preferred_min_pricing_area || 0)].max * preferred_multiplier
+      price = variant.amount_in(:EUR, Spree::PriceCategory.find_by(name: type))
+      base_price = variant.amount_in(:EUR, Spree::PriceCategory.find_by(name: 'glattschnitt'))
+
+      res = [(width * height), (preferred_min_pricing_area || 0)].max * price
+      Rails.logger.debug ">>>>>> width: #{width} height: #{height}   type: #{type}   price: #{price}   res: #{res} returns: #{res-base_price}"
+      res - base_price
     end
 
     def valid_configuration?(product_customization)
-      # expecting exactly two CustomizedProductOptions
+      required = ['Width', 'Height', 'Type']
+      return false if !options_include?(required, product_customization)
 
-      all_opts = product_customization.customized_product_options.map {|cpo| cpo.customizable_product_option.name }
+      width, height, type = get_option(product_customization, 'Width').value, get_option(product_customization, 'Height').value, get_option(product_customization, 'Type').value.to_sym
 
-      # do we have the necessary inputs?
-      has_inputs = all_opts.include?("width") && all_opts.include?("height")
+      valid_type = TYPES.include?(type)
+      return false if !valid_type
 
-      # do the inputs meet the criteria?
-      width,height = get_option(product_customization, "width"), get_option(product_customization, "height")
+      valid_width = if type == GLATTSCHNITT
+                      preferred_widths.split(',').map(&:to_d).include? width.gsub(',','.').to_d
+                    else
+                      width.gsub(',','.').to_d.between? preferred_min_width, preferred_max_width
+                    end
 
-      #    return has_inputs && width && height && (width.value.to_f * height.value.to_f) >= preferred_min_area
+      valid_height = height.gsub(',','.').to_d.between? preferred_min_height, preferred_max_height
 
-      #    rescue false
+      return false if !valid_height || !valid_width
+
       return true
     end
 
 
     private
+    def options_include?(required, product_customization)
+      (required - all_options(product_customization)).empty?
+    end
+
+    def all_options(product_customization)
+      product_customization.customized_product_options.map {|cpo| cpo.customizable_product_option.name }
+    end
+
     def get_option(product_customization, name)
       product_customization.customized_product_options.detect {|cpo| cpo.customizable_product_option.name == name }
+    end
+
+    def set_option(product_customization, name, value)
+      product_customization.customized_product_options.detect {|cpo| cpo.customizable_product_option.name == name && cpo.update_attribute(:value, value)}
     end
 
   end
