@@ -1,0 +1,232 @@
+<% @product.product_customization_types.each do |product_customization_type| %>
+    <!--<h6><%= product_customization_type.presentation %></h6>-->
+    <% if product_customization_type.description && !product_customization_type.description.empty? %>
+        <!--<p><%= product_customization_type.description %></p>-->
+    <% end %>
+    <% widths = product_customization_type.calculator.preferred_widths.split(',') %>
+    <% param_prefix = "product_customizations[#{product_customization_type.id}]" %>
+    <% type = product_customization_type.customizable_product_options.where(name: 'Type').first %>
+    <%= hidden_field_tag "#{param_prefix}[#{type.id}]", 'glattschnitt', id: 'measure-type' %>
+    <div id="carpet-options" class="row">
+      <div class="col-sm-12">
+        <h3><strong>Größe eingeben: </strong><span class="measure-result"></span></h3>
+      </div>
+      <div class="col-sm-6">
+        <a class="measure-type btn btn btn-default active"
+           data-value="glattschnitt"
+           data-price="<%= @product.amount_in(:EUR, Spree::PriceCategory.find_by(name: 'glattschnitt'))  %>"
+           role="button">
+          <strong>Glattschnitt</strong><br>
+          <span class="price_per">
+            <%=@product.price_in(:EUR, Spree::PriceCategory.find_by(name: 'glattschnitt')).display_price.to_html %>
+            <span class="per-unit">/m² *</span>
+          </span>
+                    <span class="help-icon glyphicon glyphicon-circle_question_mark glyphicon-yellow"
+                          style="white-space: nowrap;"
+                          data-toggle="popover"
+                          data-trigger="hover"
+                          data-placement="top"
+                          data-container="body"
+                          title="Glattschnitt"
+                          data-content="<p><strong>Sie wählen aus den vorgegebenen Breiten.
+                          Die Länge können Sie von 1,00 - 14,00 Meter frei wählen.</strong></p>
+                          Geben Sie die Länge ggf. mit Nachkommastellen ein.
+                          Die Berechung erfolgt zentimetergenau, für den Zuschnitt gibt es jedoch eine Toleranz von ±0,5cm.">
+          </span>
+        </a>
+      </div>
+      <div class="col-sm-6">
+        <a class="measure-type btn btn btn-default"
+           data-value="raummass"
+           data-price="<%= @product.amount_in(:EUR, Spree::PriceCategory.find_by(name: 'raummass'))  %>"
+           role="button">
+          <strong>Raummaß</strong><br>
+          <span class="price_per">
+            <%=@product.price_in(:EUR, Spree::PriceCategory.find_by(name: 'raummass')).display_price.to_html %>
+            <span class="per-unit">/m² *</span>
+          </span>
+          <span class="help-icon glyphicon glyphicon-circle_question_mark glyphicon-yellow"
+                style="white-space: nowrap;"
+                data-toggle="popover"
+                data-trigger="hover"
+                data-placement="left"
+                data-container="body"
+                title="Zuschnitt nach Raummaß"
+                data-content="<p><strong>Sie wählen Länge und Breite, der Teppich wird passend zugeschnitten.</strong></p>
+                <ul>
+                          <li>Länge: 1,00 - 14,00 Meter</li>
+                          <li>Breite: <%= widths.join(' - ') %> Meter</li>
+                          </ul>
+                          Geben Sie die Länge ggf. mit Nachkommastellen ein.
+                          Die Berechung erfolgt zentimetergenau, für den Zuschnitt gibt es jedoch eine Toleranz von ±0,5cm.">
+          </span>
+        </a>
+      </div>
+
+      <div class="col-sm-12 measures-wrapper form-horizontal">
+      <% product_customization_type.customizable_product_options.where.not(name: 'Type').each do |option| %>
+          <% option_name = option.name.downcase %>
+          <% if option_name == 'width' %>
+              <div id="<%= "#{option_name}-input-field" %>" class="form-group" style="display: none;">
+                <label for="<%= "#{option_name}-input" %>" class="col-sm-2 control-label"><%= option.presentation %></label>
+                <div class="col-sm-10">
+                  <div class="input-group">
+                  <%= text_field_tag "#{param_prefix}[#{option.id}]", '', id: "#{option_name}-input", class: 'form-control', placeholder: '1,00 - 5,00 Meter' %>
+                  <div class="input-group-addon">Meter</div>
+                  </div>
+                </div>
+              </div>
+              <div id="<%= "#{option_name}-select-field" %>" class="form-group">
+                <label for="<%= "#{option_name}-select" %>" class="col-sm-2 control-label"><%= option.presentation %></label>
+                <% select_options = options_for_select(widths.map { |v| ["#{v},00", v.strip] }) %>
+                <div class="col-sm-10">
+                  <div class="input-group">
+                    <%= select_tag "#{param_prefix}[#{option.id}]", select_options, id: "#{option_name}-select", class: 'form-control' %>
+                  <div class="input-group-addon">Meter</div>
+                </div>
+                </div>
+              </div>
+          <% else %>
+              <div id="height-input-field" class="form-group">
+                <label for="<%= "#{option_name}-" %>" class="col-sm-2 control-label"><%= option.presentation %></label>
+                <div class="col-sm-10">
+                  <div class="input-group">
+                  <%= text_field_tag "#{param_prefix}[#{option.id}]", '', id: "#{option_name}-input", class: 'form-control', placeholder: '1,00 - 14,00 Meter' %>
+                  <div class="input-group-addon">Meter</div>
+                  </div>
+                </div>
+              </div>
+          <% end %>
+      <% end %>
+        <span class="small">Der Zuschnitt hat eine Toleraz von ± 1%</span>
+      </div>
+    </div>
+
+<script>
+    $(function () {
+        $('#product-price').hide();
+        $('#quantity').parents('.form-inline').hide();
+        $('<span/>', {
+            'class':'vat-and-shipping',
+            'text': '*' + $('.vat-and-shipping').text()
+        }).insertBefore('#add-to-cart-button');
+
+        var     widthInput  = $("#carpet-options #width-input"),
+                widthInputField  = $("#carpet-options #width-input-field"),
+                widthSelect = $("#carpet-options #width-select"),
+                widthSelectField = $("#carpet-options #width-select-field"),
+                heightInput = $("#carpet-options #height-input"),
+                heightInputField = $("#carpet-options #height-input-field"),
+                priceTag    = $("#add-to-cart-button .btn-price"),
+                measureResultTag   = $(".measure-result"),
+                currency    = '€';
+
+        var validInput = function() {
+            $("#carpet-options .help-inline").remove();
+            widthInputField.removeClass('has-error').removeClass('has-warning');
+            heightInputField.removeClass('has-error').removeClass('has-warning');
+
+            var width  = widthInput.is(':visible') ? widthInput.val().replace(',','.') : widthSelect.val();
+            var height = heightInput.val().replace(',','.');
+
+            if (parseFloat(width) < 1 || parseFloat(width) > <%= widths.map(&:to_i).max %>) {
+                widthInputField.addClass('has-error')
+                        .children("div")
+                        .append('<span class="help-inline">Bitte geben Sie einen Wert zwischen 1 und <%= widths.map(&:to_i).max %> Metern ein.</span>');
+            }
+
+            if (parseFloat(height) < 1 || parseFloat(height) > 14) {
+                heightInputField.addClass('has-error')
+                        .children("div")
+                        .append('<span class="help-inline">Bitte geben Sie einen Wert zwischen 1 und 14 Metern ein.</span>');
+            }
+
+            if ($.inArray(parseFloat(width),<%= widths.map(&:to_i) %>) >= 0) widthInputField.addClass('has-warning')
+                    .children("div")
+                    .append('<span class="help-inline">Bei einer Breite von <%= widths.map(&:to_i).join(' oder ') %> Metern ist der Glattschnitt für sie günstiger.</span>');
+
+            if($("#carpet-options .has-error").length > 0) return false
+            return true
+        };
+
+        var calculatePrice = function() {
+            var width  = widthInput.is(':visible') ? widthInput.val().replace(',','.') : widthSelect.val();
+            var height = heightInput.val().replace(',','.');
+
+            //run validation to inform user about errors/warnings
+            validInput();
+
+            // use min value on error
+            if (parseFloat(width) < 1 || width == '') width = 1.0;
+            if (parseFloat(height) < 1 || height == '') height = 1.0;
+
+            return (parseFloat(width) * parseFloat(height)) * getSingleUnitPrice();
+        };
+
+        var setSingleUnitPrice = function(amount, display) {
+            $('.unit.price.selling').attr('data-price-amount', amount).html(display);
+        };
+
+        var setSumPrice = function() {
+            var width = widthInput.is(':visible') ? widthInput.val().replace('.',',') : widthSelect.val();
+            var height = heightInput.val().replace('.',',');
+
+            if (parseFloat(width) < 1 || width == '') width = 1.0;
+            if (parseFloat(height) < 1 || height == '') height = 1.0;
+
+            var measurement = width + " x " + height + " Meter";
+            measureResultTag.text(measurement);
+            price = (calculatePrice() * parseInt($('.add-to-cart input.ve').val())).toFixed(2);
+            priceTag.text((price + "").replace(".", ",") + " " + currency);
+        };
+
+        var getSingleUnitPrice =function() {
+            return parseFloat($('.unit.price.selling').attr('data-price-amount'));
+        };
+
+        setSingleUnitPrice($(".measure-type.active").data('price'), $(".measure-type.active").find('.price_per').html());
+        setSumPrice();
+
+        $('#carpet-options select, #carpet-options input').on('input',function(){ setSumPrice(); });
+        $('#carpet-options select').on('change',function(){ setSumPrice(); });
+
+        $(".measure-type").click(function () {
+            var $this  = $(this),
+                value  = $this.data('value');
+
+            $('#measure-type').val(value);
+            $('.measure-type').removeClass('active');
+            $this.addClass('active');
+
+            setSingleUnitPrice($this.data('price'), $this.find('.price_per').html());
+
+            if (value == 'glattschnitt') {
+                widthInputField.hide();
+                widthSelectField.show();
+                widthInput.prop('disabled', true);
+                widthSelect.prop('disabled', false);
+                setSumPrice();
+            } else {
+                widthInputField.show();
+                widthSelectField.hide();
+                widthSelect.prop('disabled', true);
+                widthInput.prop('disabled', false);
+                setSumPrice();
+            }
+        });
+
+        $("#cart-form form").on('submit', function() {
+            var valid = validInput();
+            if (!valid) $(".help-inline").effect( "shake", "slow" );
+            return valid;
+        });
+
+        if(window.location.hash) {
+            var variantClass = window.location.hash.replace("#/", '');
+            console.log(variantClass);
+            $("#color-variants img[data-title='" + variantClass + "']").trigger('click');
+        }
+
+    });
+</script>
+<% end %>
