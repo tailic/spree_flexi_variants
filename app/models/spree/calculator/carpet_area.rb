@@ -1,13 +1,15 @@
 module Spree
   class Calculator::CarpetArea < Calculator
-    preference :min_width,            :integer, :default => 1
-    preference :max_width,            :integer, :default => 5
+    preference :min_width,              :integer, default: 1
+    preference :max_width,              :integer, default: 5
 
-    preference :min_height,           :integer, :default => 1
-    preference :max_height,           :integer, :default => 14
+    preference :min_height,             :integer, default: 1
+    preference :max_height,             :integer, default: 14
 
-    preference :widths,  :string,  default: '4,5'
-    preference :min_pricing_area, :integer, default: 1
+    preference :widths,                 :string,  default: '4,5'
+    preference :min_pricing_area,       :integer, default: 1
+
+    preference :overedging_multiplier,  :decimal
 
     GLATTSCHNITT = :glattschnitt
     RAUMMASS = :raummass
@@ -24,9 +26,10 @@ module Spree
 
     def create_options
       [
-       CustomizableProductOption.create(:name=>'Width', :presentation=>'Width'),
-       CustomizableProductOption.create(:name=>'Height', :presentation=>'Height'),
-       CustomizableProductOption.create(:name=>'Type', :presentation=>'Type')
+       CustomizableProductOption.create(name: 'Width',      presentation: 'Width'),
+       CustomizableProductOption.create(name: 'Height',     presentation: 'Height'),
+       CustomizableProductOption.create(name: 'Type',       presentation: 'Type'),
+       CustomizableProductOption.create(name: 'Overedging', presentation: 'Overedging')
       ]
     end
 
@@ -39,24 +42,28 @@ module Spree
         return 0
       end
 
-      width  = get_option(product_customization, 'Width').value.gsub(',', '.').to_d
-      height = get_option(product_customization, 'Height').value.gsub(',', '.').to_d
-      type   = get_option(product_customization, 'Type').value.to_sym
-      type   = TYPES.include?(type) ? type : TYPES.first
+      width       = get_option(product_customization, 'Width').value.gsub(',', '.').to_d
+      height      = get_option(product_customization, 'Height').value.gsub(',', '.').to_d
+      type        = get_option(product_customization, 'Type').value.to_sym
+      type        = TYPES.include?(type) ? type : TYPES.first
+      overedging  = get_option(product_customization, 'Overedging').try(:value)
+      overedging_price = overedging ? (2 * (width + height) * preferred_overedging_multiplier) : 0.00
 
       price = variant.amount_in(:EUR, Spree::PriceCategory.find_by(name: type))
       base_price = variant.amount_in(:EUR, Spree::PriceCategory.find_by(name: 'glattschnitt'))
 
       res = [(width * height), (preferred_min_pricing_area || 0)].max * price
-      Rails.logger.debug ">>>>>> width: #{width} height: #{height}   type: #{type}   price: #{price}   res: #{res} returns: #{res-base_price}"
-      res - base_price
+      (res - base_price) + overedging_price
     end
 
     def valid_configuration?(product_customization)
-      required = ['Width', 'Height', 'Type']
+      required = %w(Width Height Type)
       return false if !options_include?(required, product_customization)
 
-      width, height, type = get_option(product_customization, 'Width').value, get_option(product_customization, 'Height').value, get_option(product_customization, 'Type').value.to_sym
+      width       = get_option(product_customization, 'Width').value
+      height      = get_option(product_customization, 'Height').value
+      type        = get_option(product_customization, 'Type').value.to_sym
+      overedging  = get_option(product_customization, 'Overedging').try(:value)
 
       valid_type = TYPES.include?(type)
       return false if !valid_type
