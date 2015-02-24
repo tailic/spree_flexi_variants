@@ -1,11 +1,9 @@
 <% @product.product_customization_types.each do |product_customization_type| %>
-    <!--<h6><%= product_customization_type.presentation %></h6>-->
-    <% if product_customization_type.description && !product_customization_type.description.empty? %>
-        <!--<p><%= product_customization_type.description %></p>-->
-    <% end %>
     <% widths = product_customization_type.calculator.preferred_widths.split(',') %>
     <% param_prefix = "product_customizations[#{product_customization_type.id}]" %>
     <% type = product_customization_type.customizable_product_options.where(name: 'Type').first %>
+    <% overedging = product_customization_type.customizable_product_options.where(name: 'Overedging').first %>
+    <% overedging_multiplier = product_customization_type.calculator.preferred_overedging_multiplier %>
     <%= hidden_field_tag "#{param_prefix}[#{type.id}]", 'glattschnitt', id: 'measure-type' %>
     <div id="carpet-options" class="row">
       <div class="col-sm-12">
@@ -31,7 +29,7 @@
                           data-content="<p><strong>Sie wählen aus den vorgegebenen Breiten.
                           Die Länge können Sie von 1,00 - 14,00 Meter frei wählen.</strong></p>
                           Geben Sie die Länge ggf. mit Nachkommastellen ein.
-                          Die Berechung erfolgt zentimetergenau, für den Zuschnitt gibt es jedoch eine Toleranz von ±0,5cm.">
+                          Die Berechung erfolgt zentimetergenau. Für den Zuschnitt gilt eine Toleranz von ±1%.">
           </span>
         </a>
       </div>
@@ -58,13 +56,13 @@
                           <li>Breite: <%= widths.join(' - ') %> Meter</li>
                           </ul>
                           Geben Sie die Länge ggf. mit Nachkommastellen ein.
-                          Die Berechung erfolgt zentimetergenau, für den Zuschnitt gibt es jedoch eine Toleranz von ±0,5cm.">
+                          Die Berechung erfolgt zentimetergenau. Für den Zuschnitt gilt eine Toleranz von ±1%.">
           </span>
         </a>
       </div>
 
       <div class="col-sm-12 measures-wrapper form-horizontal">
-      <% product_customization_type.customizable_product_options.where.not(name: 'Type').each do |option| %>
+      <% product_customization_type.customizable_product_options.where.not(name: ['Type', 'Overedging']).each do |option| %>
           <% option_name = option.name.downcase %>
           <% if option_name == 'width' %>
               <div id="<%= "#{option_name}-input-field" %>" class="form-group" style="display: none;">
@@ -98,9 +96,31 @@
               </div>
           <% end %>
       <% end %>
-        <span class="small">Der Zuschnitt hat eine Toleraz von ± 1%</span>
+
+        <ul class="list-group" class="col-sm-12">
+          <li class="list-group-item">
+            <div class="checkbox">
+              <label for="<%= "#{param_prefix}[#{overedging.id}]" %>">
+                <%= check_box_tag "#{param_prefix}[#{overedging.id}]", 'overedging', false, data: {multiplier: overedging_multiplier}, id: 'overedging' %>
+                <strong><%= overedging.presentation %></strong> (<%= Spree::Money.new(overedging_multiplier).to_s.gsub(' ', '&nbsp;').html_safe %>/m)
+              </label>
+
+                        <span class="help-icon glyphicon glyphicon-circle_question_mark glyphicon-yellow"
+                              style="white-space: nowrap;"
+                              data-toggle="popover"
+                              data-trigger="hover"
+                              data-placement="top"
+                              data-container="body"
+                              title="Ketteln"
+                              data-content="<p>Umlaufend farblich passende Kettelung</p>">
+          </span>
+            </div>
+          </li>
+        </ul>
       </div>
+
     </div>
+    <span class="small">Der Zuschnitt hat eine Toleraz von ± 1%</span>
 
 <script>
     $(function () {
@@ -160,7 +180,13 @@
             if (parseFloat(width) < 1 || width == '') width = 1.0;
             if (parseFloat(height) < 1 || height == '') height = 1.0;
 
-            return (parseFloat(width) * parseFloat(height)) * getSingleUnitPrice();
+            width = parseFloat(width);
+            height= parseFloat(height);
+
+            overedging = getOveredgingPrice(width, height);
+            console.log(overedging);
+
+            return ((width * height) * getSingleUnitPrice()) + overedging;
         };
 
         var setSingleUnitPrice = function(amount, display) {
@@ -179,6 +205,19 @@
             price = (calculatePrice() * parseInt($('.add-to-cart input.ve').val())).toFixed(2);
             priceTag.text((price + "").replace(".", ",") + " " + currency);
         };
+
+        var getOveredgingPrice = function(width, height) {
+            overedgingCheckbox = $("#overedging");
+            if (overedgingCheckbox.is(':checked')) {
+                overedgingCheckbox.prop('checked', true);
+                overedgingCheckbox.attr('checked', 'checked');
+                overedging = 2 * (width + height) * parseFloat(overedgingCheckbox.data('multiplier'));
+
+            } else {
+                overedging = 0;
+            }
+            return overedging;
+        }
 
         var getSingleUnitPrice =function() {
             return parseFloat($('.unit.price.selling').attr('data-price-amount'));
@@ -215,6 +254,10 @@
             }
         });
 
+        $("#overedging").click(function(){
+            setSumPrice();
+        });
+
         $("#cart-form form").on('submit', function() {
             var valid = validInput();
             if (!valid) $(".help-inline").effect( "shake", "slow" );
@@ -223,7 +266,6 @@
 
         if(window.location.hash) {
             var variantClass = window.location.hash.replace("#/", '');
-            console.log(variantClass);
             $("#color-variants img[data-title='" + variantClass + "']").trigger('click');
         }
 
