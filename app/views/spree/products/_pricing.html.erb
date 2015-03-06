@@ -1,5 +1,5 @@
 <%
-  if SpreeFlexiVariants::Config[:use_javascript_pricing_updates]
+  if SpreeFlexiVariants::Config[:use_javascript_pricing_updates] && false
 %>
 
 <%= content_for :head do %>
@@ -122,14 +122,14 @@
   }
 
   // formatCurrency lib only know de-CH or de-DE, but we use de as default locale
-  $.formatCurrency.regions['de'] = {
-    symbol: 'Fr.',
-    positiveFormat: '%s %n',
-    negativeFormat: '%s -%n',
-    decimalSymbol: '.',
-    digitGroupSymbol: '\'',
-    groupDigits: true
-  };
+    $.formatCurrency.regions['de-DE'] = {
+        symbol: '€',
+        positiveFormat: '%n %s',
+        negativeFormat: '-%n %s',
+        decimalSymbol: ',',
+        digitGroupSymbol: '.',
+        groupDigits: true
+    };
 
   function updatePrice() {
 
