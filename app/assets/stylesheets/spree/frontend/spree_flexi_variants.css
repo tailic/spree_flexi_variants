@@ -1,6 +1,6 @@
 /*
- *= require store/spree_core
- *= require self
+ *= require spree/frontend
+ *= require_tree .
 */
 
 
