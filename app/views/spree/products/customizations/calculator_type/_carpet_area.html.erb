@@ -33,10 +33,12 @@
           </span>
         </a>
       </div>
+      <% raummass_amount = @product.amount_in(:EUR, Spree::PriceCategory.find_by(name: 'raummass')) %>
+      <% if raummass_amount.present? && raummass_amount > 0 %>
       <div class="col-sm-6">
         <a class="measure-type btn btn btn-default"
            data-value="raummass"
-           data-price="<%= @product.amount_in(:EUR, Spree::PriceCategory.find_by(name: 'raummass'))  %>"
+           data-price="<%= raummass_amount  %>"
            role="button">
           <strong>Raummaß</strong><br>
           <span class="price_per">
@@ -60,7 +62,7 @@
           </span>
         </a>
       </div>
-
+      <% end %>
       <div class="col-sm-12 measures-wrapper form-horizontal">
       <% product_customization_type.customizable_product_options.where.not(name: ['Type', 'Overedging']).each do |option| %>
           <% option_name = option.name.downcase %>
