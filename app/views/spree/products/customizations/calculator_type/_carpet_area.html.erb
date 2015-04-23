@@ -19,7 +19,7 @@
             <%=@product.price_in(:EUR, Spree::PriceCategory.find_by(name: 'glattschnitt')).display_price.to_html %>
             <span class="per-unit">/m² *</span>
           </span>
-                    <span class="help-icon glyphicon glyphicon-circle_question_mark glyphicon-yellow"
+                    <span class="help-icon glyphicon glyphicon-circle-question-mark glyphicon-yellow"
                           style="white-space: nowrap;"
                           data-toggle="popover"
                           data-trigger="hover"
@@ -45,7 +45,7 @@
             <%=@product.price_in(:EUR, Spree::PriceCategory.find_by(name: 'raummass')).display_price.to_html %>
             <span class="per-unit">/m² *</span>
           </span>
-          <span class="help-icon glyphicon glyphicon-circle_question_mark glyphicon-yellow"
+          <span class="help-icon glyphicon glyphicon-circle-question-mark glyphicon-yellow"
                 style="white-space: nowrap;"
                 data-toggle="popover"
                 data-trigger="hover"
@@ -107,7 +107,7 @@
                 <strong><%= overedging.presentation %></strong> (<%= Spree::Money.new(overedging_multiplier).to_s.gsub(' ', '&nbsp;').html_safe %>/m)
               </label>
 
-                        <span class="help-icon glyphicon glyphicon-circle_question_mark glyphicon-yellow"
+                        <span class="help-icon glyphicon glyphicon-circle-question-mark glyphicon-yellow"
                               style="white-space: nowrap;"
                               data-toggle="popover"
                               data-trigger="hover"
