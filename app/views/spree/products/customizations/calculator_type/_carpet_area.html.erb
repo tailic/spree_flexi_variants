@@ -151,13 +151,13 @@
             var width  = widthInput.is(':visible') ? widthInput.val().replace(',','.') : widthSelect.val();
             var height = heightInput.val().replace(',','.');
 
-            if (parseFloat(width) < 1 || parseFloat(width) > <%= widths.map(&:to_i).max %>) {
+            if (parseFloat(width) < 1 || parseFloat(width) > <%= widths.map(&:to_i).max %> || isNaN(width)) {
                 widthInputField.addClass('has-error')
                         .children("div")
                         .append('<span class="help-inline">Bitte geben Sie einen Wert zwischen 1 und <%= widths.map(&:to_i).max %> Metern ein.</span>');
             }
 
-            if (parseFloat(height) < 1 || parseFloat(height) > 14) {
+            if (parseFloat(height) < 1 || parseFloat(height) > 14 || isNaN(width)) {
                 heightInputField.addClass('has-error')
                         .children("div")
                         .append('<span class="help-inline">Bitte geben Sie einen Wert zwischen 1 und 14 Metern ein.</span>');
