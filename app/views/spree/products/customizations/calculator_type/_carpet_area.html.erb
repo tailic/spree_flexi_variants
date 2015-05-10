@@ -4,13 +4,15 @@
     <% type = product_customization_type.customizable_product_options.where(name: 'Type').first %>
     <% overedging = product_customization_type.customizable_product_options.where(name: 'Overedging').first %>
     <% overedging_multiplier = product_customization_type.calculator.preferred_overedging_multiplier %>
+    <% raummass_amount = @product.amount_in(:EUR, Spree::PriceCategory.find_by(name: 'raummass')) %>
+    <% show_raummass = raummass_amount.present? && raummass_amount > 0 %>
     <%= hidden_field_tag "#{param_prefix}[#{type.id}]", 'glattschnitt', id: 'measure-type' %>
     <div id="carpet-options" class="row">
       <div class="col-sm-12">
         <h3><strong>Größe eingeben: </strong><span class="measure-result"></span></h3>
       </div>
-      <div class="col-sm-6">
-        <a class="measure-type btn btn btn-default active"
+      <div class="<%= show_raummass ? 'col-sm-6' : 'col-sm-12'%>">
+        <a class="measure-type btn btn btn-default active <%= 'btn-block' if !show_raummass %>"
            data-value="glattschnitt"
            data-price="<%= @product.amount_in(:EUR, Spree::PriceCategory.find_by(name: 'glattschnitt'))  %>"
            role="button">
@@ -33,8 +35,7 @@
           </span>
         </a>
       </div>
-      <% raummass_amount = @product.amount_in(:EUR, Spree::PriceCategory.find_by(name: 'raummass')) %>
-      <% if raummass_amount.present? && raummass_amount > 0 %>
+      <% if show_raummass %>
       <div class="col-sm-6">
         <a class="measure-type btn btn btn-default"
            data-value="raummass"
@@ -99,6 +100,7 @@
           <% end %>
       <% end %>
 
+        <% if overedging_multiplier.present? && overedging_multiplier > 0 %>
         <ul class="list-group" class="col-sm-12">
           <li class="list-group-item">
             <div class="checkbox">
@@ -119,6 +121,7 @@
             </div>
           </li>
         </ul>
+        <% end %>
       </div>
 
     </div>

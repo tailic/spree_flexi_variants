@@ -78,6 +78,9 @@ module Spree
 
       return false if !valid_height || !valid_width
 
+      return false if preferred_overedging_multiplier.present? && preferred_overedging_multiplier > 0 && overedging == 1 #prevent overedging if multiplier is 0
+
+
       return true
     end
 
