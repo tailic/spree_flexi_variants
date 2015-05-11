@@ -6,6 +6,9 @@
     <% overedging_multiplier = product_customization_type.calculator.preferred_overedging_multiplier %>
     <% raummass_amount = @product.amount_in(:EUR, Spree::PriceCategory.find_by(name: 'raummass')) %>
     <% show_raummass = raummass_amount.present? && raummass_amount > 0 %>
+    <% max_height = product_customization_type.calculator.preferred_max_height %>
+    <% min_height = product_customization_type.calculator.preferred_min_height %>
+
     <%= hidden_field_tag "#{param_prefix}[#{type.id}]", 'glattschnitt', id: 'measure-type' %>
     <div id="carpet-options" class="row">
       <div class="col-sm-12">
@@ -29,7 +32,7 @@
                           data-container="body"
                           title="Glattschnitt"
                           data-content="<p><strong>Sie wählen aus den vorgegebenen Breiten.
-                          Die Länge können Sie von 1,00 - 14,00 Meter frei wählen.</strong></p>
+                          Die Länge können Sie von <%=min_height%>,00 - <%=max_height%>,00 Meter frei wählen.</strong></p>
                           Geben Sie die Länge ggf. mit Nachkommastellen ein.
                           Die Berechung erfolgt zentimetergenau. Für den Zuschnitt gilt eine Toleranz von ±1%.">
           </span>
@@ -55,7 +58,7 @@
                 title="Zuschnitt nach Raummaß"
                 data-content="<p><strong>Sie wählen Länge und Breite, der Teppichboden wird passend zugeschnitten.</strong></p>
                 <ul>
-                          <li>Länge: 1,00 - 14,00 Meter</li>
+                          <li>Länge: <%=min_height%>,00 - <%=max_height%>,00 Meter</li>
                           <li>Breite: <%= widths.join(' - ') %> Meter</li>
                           </ul>
                           Geben Sie die Länge ggf. mit Nachkommastellen ein.
@@ -92,7 +95,7 @@
                 <label for="<%= "#{option_name}-" %>" class="col-sm-2 control-label"><%= option.presentation %></label>
                 <div class="col-sm-10">
                   <div class="input-group">
-                  <%= text_field_tag "#{param_prefix}[#{option.id}]", '', id: "#{option_name}-input", class: 'form-control', placeholder: '1,00 - 14,00 Meter' %>
+                  <%= text_field_tag "#{param_prefix}[#{option.id}]", '', id: "#{option_name}-input", class: 'form-control', placeholder: "#{min_height},00 - #{max_height},00 Meter" %>
                   <div class="input-group-addon">Meter</div>
                   </div>
                 </div>
@@ -108,7 +111,6 @@
                 <%= check_box_tag "#{param_prefix}[#{overedging.id}]", 'overedging', false, data: {multiplier: overedging_multiplier}, id: 'overedging' %>
                 <strong><%= overedging.presentation %></strong> (<%= Spree::Money.new(overedging_multiplier).to_s.gsub(' ', '&nbsp;').html_safe %>/m)
               </label>
-
                         <span class="help-icon glyphicon glyphicon-circle-question-mark glyphicon-yellow"
                               style="white-space: nowrap;"
                               data-toggle="popover"
