@@ -107,7 +107,7 @@
         <ul class="list-group" class="col-sm-12">
           <li class="list-group-item">
             <div class="checkbox">
-              <label for="<%= "#{param_prefix}[#{overedging.id}]" %>">
+              <label for="overedging">
                 <%= check_box_tag "#{param_prefix}[#{overedging.id}]", 'overedging', false, data: {multiplier: overedging_multiplier}, id: 'overedging' %>
                 <strong><%= overedging.presentation %></strong> (<%= Spree::Money.new(overedging_multiplier).to_s.gsub(' ', '&nbsp;').html_safe %>/m)
               </label>
