@@ -3,6 +3,7 @@ module Spree
 
     def populate(variant_id, quantity, ad_hoc_option_value_ids = [], product_customizations = [])
       attempt_cart_add(variant_id, quantity, ad_hoc_option_value_ids, product_customizations)
+      order.ensure_updated_shipments
       valid?
     end
 
