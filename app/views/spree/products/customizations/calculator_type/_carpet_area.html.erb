@@ -1,13 +1,15 @@
 <% @product.product_customization_types.each do |product_customization_type| %>
-    <% widths = product_customization_type.calculator.preferred_widths.split(',') %>
+    <% calculator = calculator %>
+    <% customizable_options = customizable_options %>
+    <% widths = calculator.preferred_widths.split(',').map(&:to_i) %>
     <% param_prefix = "product_customizations[#{product_customization_type.id}]" %>
-    <% type = product_customization_type.customizable_product_options.where(name: 'Type').first %>
-    <% overedging = product_customization_type.customizable_product_options.where(name: 'Overedging').first %>
-    <% overedging_multiplier = product_customization_type.calculator.preferred_overedging_multiplier %>
+    <% type = customizable_options.where(name: 'Type').first %>
+    <% overedging = customizable_options.where(name: 'Overedging').first %>
+    <% overedging_multiplier = calculator.preferred_overedging_multiplier %>
     <% raummass_amount = @product.amount_in(:EUR, Spree::PriceCategory.find_by(name: 'raummass')) %>
     <% show_raummass = raummass_amount.present? && raummass_amount > 0 %>
-    <% max_height = product_customization_type.calculator.preferred_max_height %>
-    <% min_height = product_customization_type.calculator.preferred_min_height %>
+    <% max_height = calculator.preferred_max_height %>
+    <% min_height = calculator.preferred_min_height %>
 
     <%= hidden_field_tag "#{param_prefix}[#{type.id}]", 'glattschnitt', id: 'measure-type' %>
     <div id="carpet-options" class="row">
@@ -70,7 +72,7 @@
         <% end %>
       </div>
       <div class="col-sm-12 measures-wrapper form-horizontal">
-      <% product_customization_type.customizable_product_options.where.not(name: ['Type', 'Overedging']).each do |option| %>
+      <% customizable_options.where.not(name: ['Type', 'Overedging']).each do |option| %>
           <% option_name = option.name.downcase %>
           <% if option_name == 'width' %>
               <div id="<%= "#{option_name}-input-field" %>" class="form-group" style="display: none;">
@@ -158,21 +160,21 @@
             var width  = widthInput.is(':visible') ? widthInput.val().replace(',','.') : widthSelect.val();
             var height = heightInput.val().replace(',','.');
 
-            if (parseFloat(width) < 1 || parseFloat(width) > <%= widths.map(&:to_i).max %> || isNaN(width)) {
+            if (parseFloat(width) < 1 || parseFloat(width) > <%= widths.max %> || isNaN(width)) {
                 widthInputField.addClass('has-error')
                         .children("div")
-                        .append('<span class="help-inline">Bitte geben Sie einen Wert zwischen 1 und <%= widths.map(&:to_i).max %> Metern ein.</span>');
+                        .append('<span class="help-inline">Bitte geben Sie einen Wert zwischen 1 und <%= widths.max %> Metern ein.</span>');
             }
 
-            if (parseFloat(height) < 1 || parseFloat(height) > 14 || isNaN(width)) {
+            if (parseFloat(height) < 0.2 || parseFloat(height) > 14 || isNaN(width)) {
                 heightInputField.addClass('has-error')
                         .children("div")
                         .append('<span class="help-inline">Bitte geben Sie einen Wert zwischen 1 und 14 Metern ein.</span>');
             }
 
-            if ($.inArray(parseFloat(width),<%= widths.map(&:to_i) %>) >= 0) widthInputField.addClass('has-warning')
+            if ($.inArray(parseFloat(width),<%= widths %>) >= 0) widthInputField.addClass('has-warning')
                     .children("div")
-                    .append('<span class="help-inline">Bei einer Breite von <%= widths.map(&:to_i).join(' oder ') %> Metern ist der Glattschnitt für sie günstiger.</span>');
+                    .append('<span class="help-inline">Bei einer Breite von <%= widths.join(' oder ') %> Metern ist der Glattschnitt für sie günstiger.</span>');
 
             if($("#carpet-options .has-error").length > 0) return false
             return true
@@ -187,7 +189,7 @@
 
             // use min value on error
             if (parseFloat(width) < 1 || width == '') width = 1.0;
-            if (parseFloat(height) < 1 || height == '') height = 1.0;
+            if (parseFloat(height) < <%= widths.min %> || height == '') height = 1.0;
 
             width = parseFloat(width);
             height= parseFloat(height);
