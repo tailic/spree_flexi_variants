@@ -1,6 +1,6 @@
 <% @product.product_customization_types.each do |product_customization_type| %>
-    <% calculator = calculator %>
-    <% customizable_options = customizable_options %>
+    <% calculator = product_customization_type.calculator %>
+    <% customizable_options = product_customization_type.customizable_product_options %>
     <% widths = calculator.preferred_widths.split(',').map(&:to_i) %>
     <% param_prefix = "product_customizations[#{product_customization_type.id}]" %>
     <% type = customizable_options.where(name: 'Type').first %>
@@ -86,7 +86,7 @@
               </div>
               <div id="<%= "#{option_name}-select-field" %>" class="form-group">
                 <label for="<%= "#{option_name}-select" %>" class="col-sm-2 control-label"><%= option.presentation %></label>
-                <% select_options = options_for_select(widths.map { |v| ["#{v},00", v.strip] }) %>
+                <% select_options = options_for_select(widths.map { |v| ["#{v},00", v] }) %>
                 <div class="col-sm-10">
                   <div class="input-group">
                     <%= select_tag "#{param_prefix}[#{option.id}]", select_options, id: "#{option_name}-select", class: 'form-control' %>
@@ -142,6 +142,8 @@
             'text': '*' + $('.vat-and-shipping').text()
         }).insertBefore('#add-to-cart-button');
 
+      //var CarpetCalculator = {};
+
         var     widthInput  = $("#carpet-options #width-input"),
                 widthInputField  = $("#carpet-options #width-input-field"),
                 widthSelect = $("#carpet-options #width-select"),
@@ -166,7 +168,7 @@
                         .append('<span class="help-inline">Bitte geben Sie einen Wert zwischen 1 und <%= widths.max %> Metern ein.</span>');
             }
 
-            if (parseFloat(height) < 0.2 || parseFloat(height) > 14 || isNaN(width)) {
+            if (parseFloat(height) < 1 || parseFloat(height) > 14 || isNaN(width)) {
                 heightInputField.addClass('has-error')
                         .children("div")
                         .append('<span class="help-inline">Bitte geben Sie einen Wert zwischen 1 und 14 Metern ein.</span>');
@@ -189,7 +191,7 @@
 
             // use min value on error
             if (parseFloat(width) < 1 || width == '') width = 1.0;
-            if (parseFloat(height) < <%= widths.min %> || height == '') height = 1.0;
+            if (parseFloat(height) < <%= min_height %> || height == '') height = 1.0;
 
             width = parseFloat(width);
             height= parseFloat(height);
