@@ -14,13 +14,15 @@
     <%= hidden_field_tag "#{param_prefix}[#{type.id}]", 'glattschnitt', id: 'measure-type' %>
     <div id="carpet-options" class="row">
       <div class="col-sm-12">
-        <h3><strong>Größe eingeben: </strong><span class="measure-result"></span></h3>
+        <h3><strong>Größe eingeben: </strong></h3>
       </div>
       <div class="col-sm-12 clearfix">
         <div class="measure-wrapper pull-left<%#= show_raummass ? 'col-sm-6' : 'col-sm-12'%>">
           <a class="measure-type btn btn btn-default active <%= 'btn-block' if !show_raummass %>"
              data-value="glattschnitt"
-             data-price="<%= @product.amount_in(:EUR, Spree::PriceCategory.find_by(name: 'glattschnitt'))  %>"
+             data-price="<%= @product.amount_in(:EUR, Spree::PriceCategory.find_by(name: 'glattschnitt')) %>"
+             data-crossed-price="<%=  @product.price_in(:EUR, Spree::PriceCategory.find_by(name: 'streichpreis')).money.to_html %>"
+             data-saved="<%= you_save(@product) %>"
              role="button">
             <strong>Glattschnitt</strong><br>
             <span class="price_per">
@@ -42,10 +44,13 @@
           </a>
         </div>
         <% if show_raummass %>
+          <% crossed = @product.price_in(:EUR, Spree::PriceCategory.find_by(name: 'streichpreis2')) %>
         <div class="measure-wrapper pull-left">
           <a class="measure-type btn btn btn-default"
              data-value="raummass"
-             data-price="<%= raummass_amount  %>"
+             data-price="<%= raummass_amount %>"
+             data-crossed-price="<%= crossed.money.to_html %>"
+             data-saved="<%= you_save(@product, crossed.amount) %>"
              role="button">
             <strong>Raummaß</strong><br>
             <span class="price_per">
@@ -108,7 +113,7 @@
       <% end %>
 
         <% if overedging_multiplier.present? && overedging_multiplier > 0 %>
-        <ul class="list-group" class="col-sm-12">
+        <ul class="list-group overedging" class="col-sm-12">
           <li class="list-group-item">
             <div class="checkbox">
               <label for="overedging">
@@ -129,18 +134,16 @@
         </ul>
         <% end %>
       </div>
-
     </div>
-    <span class="small">Der Zuschnitt hat eine Toleraz von ± 1%</span>
 
 <script>
     $(function () {
-        $('#product-price').hide();
+        //$('#product-price').hide();
         $('#quantity').parents('.form-inline').hide();
-        $('<span/>', {
-            'class':'vat-and-shipping',
-            'text': '*' + $('.vat-and-shipping').text()
-        }).insertBefore('#add-to-cart-button');
+//        $('<span/>', {
+//            'class':'vat-and-shipping',
+//            'text': '*' + $('.vat-and-shipping').text()
+//        }).insertBefore('#add-to-cart-button');
 
       //var CarpetCalculator = {};
 
@@ -201,8 +204,14 @@
             return ((width * height) * getSingleUnitPrice()) + overedging;
         };
 
-        var setSingleUnitPrice = function(amount, display) {
-            $('.unit.price.selling').attr('data-price-amount', amount).html(display);
+        var setSingleUnitPrice = function(measureType) {
+            $('.unit.price.selling').attr('data-price-amount', measureType.data('price')).html(measureType.find('.price_per').html());
+          var crossed_price = Spree.parsePrice(measureType.data('crossed-price'));
+          var price = measureType.data('price');
+            if((Math.round(parseFloat(crossed_price)*100)/100) > (Math.round(parseFloat(price)*100)/100)) {
+              $('.crossed_price').html('<del>UVP ' + measureType.data('crossed-price') + '/m²</del>');
+              $('.savings').html(measureType.data('saved'));
+            }
         };
 
         var setSumPrice = function() {
@@ -235,7 +244,7 @@
             return parseFloat($('.unit.price.selling').attr('data-price-amount'));
         };
 
-        setSingleUnitPrice($(".measure-type.active").data('price'), $(".measure-type.active").find('.price_per').html());
+        setSingleUnitPrice($(".measure-type.active"));
         setSumPrice();
 
         $('#carpet-options select, #carpet-options input').on('input',function(){ setSumPrice(); });
@@ -249,7 +258,7 @@
             $('.measure-type').removeClass('active');
             $this.addClass('active');
 
-            setSingleUnitPrice($this.data('price'), $this.find('.price_per').html());
+            setSingleUnitPrice($this);
 
             if (value == 'glattschnitt') {
                 widthInputField.hide();
